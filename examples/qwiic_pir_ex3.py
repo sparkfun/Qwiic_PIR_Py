@@ -44,7 +44,7 @@ import qwiic_pir
 import time
 import sys
 
-debounce_time = 750
+debounce_time = .750
 
 def runExample():
 
