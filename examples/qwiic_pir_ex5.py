@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 #-----------------------------------------------------------------------------
-# qwiic_pir_ex3.py
+# qwiic_pir_ex5.py
 #
-# Queue Example for the Qwiic PIR Device
+# Simple Example to change the I2C address of the Qwiic PIR Device
 #------------------------------------------------------------------------
 #
-# Written by Andy England @ SparkFun Electronics, January 2021
+# Written by Priyanka Makin @ SparkFun Electronics, March 2021
 # 
 # This python library supports the SparkFun Electroncis qwiic 
 # qwiic sensor/board ecosystem on a Raspberry Pi (and compatable) single
@@ -36,7 +36,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
 # SOFTWARE.
 #==================================================================================
-# Example 3
+# Example 5
 #
 
 from __future__ import print_function
@@ -44,47 +44,47 @@ import qwiic_pir
 import time
 import sys
 
-debounce_time = .2
-
 def run_example():
 
-	print("\nSparkFun Qwiic PIR  Example 3\n")
-	my_PIR = qwiic_pir.QwiicPIR()
+	print("\nSparkFun Qwiic PIR  Example 5\n")
+	my_PIR = qwiic_pir.QwiicPIR(0x27)
 
 	if my_PIR.begin() == False:
 		print("The Qwiic PIR isn't connected to the system. Please check your connection", \
 			file=sys.stderr)
 		return
 
-	print ("Waiting 30 seconds for PIR to stabilize")
-	for i in range(0, 30):
-		print(i)
-		time.sleep(1)
-
-	print("Device Stable")
-
-	while True:
-		if my_PIR.is_detected_queue_empty() is False:
-			last_detect = my_PIR.time_since_last_detect() / 1000.0
-			first_detect =  my_PIR.time_since_first_detect() / 1000.0
-			print("\n" + str(last_detect) + "s since last PIR detect   ")
-			print(str(first_detect) + "s since first PIR detect")
+	print("\nEnter a new I2C address for the Qwiic PIR to use.")
+	print("\nDon't use the 0x prefix. For instance, if you wanted to")
+	print("\nchange the address to 0x5B, you would type 5B and hit enter.")
+	
+	new_address = raw_input("\nNew address: ")
+	# Change to hex
+	new_address = int(new_address, 16)
+	
+	# Check if the user entered a valid address
+	if new_address > 0x08 and new_address < 0x77:
+		print("\nCharacters received and new address valid!")
+		print("\nAttempting to set Qwiic PIR to new address...")
+		
+		my_PIR.set_I2C_address(new_address)
+		print("\nAddress successfully changed!")
+		
+		# Check that the Qwiic PIR acknowledges on the new address
+		time.sleep(0.02)
+		if my_PIR.begin() == False:
+			print("\nThe Qwiic PIR is not connected to the system. Please check you're connection", \
+				file=sys.stderr)
+				
 		else:
-			print("Detected queue is empty")
-
-		if my_PIR.is_removed_queue_empty() is False:
-			last_remove = my_PIR.time_since_last_remove() / 1000.0
-			first_remove =  my_PIR.time_since_first_remove() / 1000.0
-			print("\n" + str(last_remove) + "s since last PIR remove   ")
-			print(str(first_remove) + "s since first PIR remove")
-		else:
-			print("Removed queue is empty")
-			
-		time.sleep(debounce_time)
+			print("\nPIR acknowledged on new address!")
+	
+	else:
+		print("\nAddress entered not valid I2C address.")
 
 if __name__ == '__main__':
 	try:
 		run_example()
 	except (KeyboardInterrupt, SystemExit) as exErr:
-		print("\nEnding Example 3")
+		print("\nEnding Example 5")
 		sys.exit(0)

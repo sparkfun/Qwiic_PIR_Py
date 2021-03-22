@@ -44,18 +44,18 @@ import qwiic_pir
 import time
 import sys
 
-debounce_time = .750
+debounce_time = .20
 
-def runExample():
+def run_example():
 
 	print("\nSparkFun Qwiic PIR  Example 1\n")
-	myPIR = qwiic_pir.QwiicPIR()
+	my_PIR = qwiic_pir.QwiicPIR()
 
-	if myPIR.begin() == False:
+	if my_PIR.begin() == False:
 		print("The Qwiic PIR isn't connected to the system. Please check your connection", \
 			file=sys.stderr)
 		return
-
+		
 	print ("Waiting 30 seconds for PIR to stabilize")
 	for i in range(0, 30):
 		print(i)
@@ -64,7 +64,7 @@ def runExample():
 	print("Device Stable")
 
 	while True:
-		if myPIR.rawReading() is True:
+		if my_PIR.raw_reading() is True:
 			print("Object Detected")
 		else:
 			print("Object Removed")
@@ -73,7 +73,7 @@ def runExample():
 
 if __name__ == '__main__':
 	try:
-		runExample()
+		run_example()
 	except (KeyboardInterrupt, SystemExit) as exErr:
 		print("\nEnding Example 1")
 		sys.exit(0)

@@ -2,10 +2,10 @@
 #-----------------------------------------------------------------------------
 # qwiic_pir_ex4.py
 #
-# Simple Example for the Qwiic PIR Device
+# Queue Popping Example for the Qwiic PIR Device
 #------------------------------------------------------------------------
 #
-# Written by Andy England @ SparkFun Electronics, January 2021
+# Written by Priyanka Makin @ SparkFun Electronics, March 2021
 # 
 # This python library supports the SparkFun Electroncis qwiic 
 # qwiic sensor/board ecosystem on a Raspberry Pi (and compatable) single
@@ -43,28 +43,15 @@ from __future__ import print_function
 import qwiic_pir
 import time
 import sys
-import RPi.GPIO as GPIO
 
-INTERRUPT_GPIO = 25
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(INTERRUPT_GPIO, GPIO.IN)
+debounce_time = .2
 
-myPIR = qwiic_pir.QwiicPIR()
+def run_example():
 
-def interruptCallback(channel):
-	if myPIR.objectDetected():
-		print("Object Detected")
-	if myPIR.objectRemoved():
-		print("Object Removed")
-	myPIR.clearEventBits()
+	print("\nSparkFun Qwiic PIR  Example 4\n")
+	my_PIR = qwiic_pir.QwiicPIR()
 
-
-def runExample():
-
-	print("\nSparkFun Qwiic PIR  Example 2\n")
-	myPIR = qwiic_pir.QwiicPIR()
-
-	if myPIR.begin() == False:
+	if my_PIR.begin() == False:
 		print("The Qwiic PIR isn't connected to the system. Please check your connection", \
 			file=sys.stderr)
 		return
@@ -74,16 +61,26 @@ def runExample():
 		print(i)
 		time.sleep(1)
 
-	GPIO.add_event_detect(INTERRUPT_GPIO, GPIO.FALLING, callback=interruptCallback, bouncetime=5)
 	print("Device Stable")
 
 	while True:
-		time.sleep(.1)
-
+		print("\nType 'd' to pop from the detected queue.")
+		val = raw_input("Type 'r' to pop from the removed queue: ")
+		# If the character is 'd' or 'D', then pop a value off the detected queue
+		if val == 'd' or val == 'D':
+			print("\nPopped detected queue! The first timestamp in detected queue was: ")
+			print(str(my_PIR.pop_detected_queue() / 1000.0))
+			
+		# If the character is 'r' or 'R', then pop a value off the removed queue
+		if val == 'r' or val == 'R':
+			print("\nPopped removed queue! The first timestamp in removed queue was: ")
+			print(str(my_PIR.pop_removed_queue() / 1000.0))
+			
+		time.sleep(debounce_time)
 
 if __name__ == '__main__':
 	try:
-		runExample()
+		run_example()
 	except (KeyboardInterrupt, SystemExit) as exErr:
-		print("\nEnding Example 1")
+		print("\nEnding Example 4")
 		sys.exit(0)
