@@ -1,12 +1,12 @@
 #-----------------------------------------------------------------------------
 # qwiic_pir.py
 #
-# Python library for the SparkFun qwiic pir.
+# Python library for the SparkFun qwiic PIR.
 #   https://www.sparkfun.com/products/16407
 #
 #------------------------------------------------------------------------
 #
-# Written by Andy England @ SparkFun Electronics, January 2021
+# Written by Andy England and Priyanka Makin @ SparkFun Electronics, January 2021
 # 
 # This python library supports the SparkFun Electroncis qwiic 
 # qwiic sensor/board ecosystem 
@@ -99,18 +99,23 @@ class QwiicPIR(object):
     I2C_ADDRESS = 0x19
 
     # Status Flags
-    eventAvailable = 0
-    objectRemove = 0
-    objectDetect = 0
-    rawObjectDetected = 0
+    event_available = 0
+    object_remove = 0
+    object_detect = 0
+    raw_object_detected = 0
 
     # Interrupt Configuration Flags
-    interruptEnable = 0
+    interrupt_enable = 0
 
-    # Queue Status Flags
-    popRequest = 0
-    isEmpty = 0
-    isFull = 0
+    # Detected Queue Status Flags
+    detected_pop_request = 0
+    detected_is_empty = 0
+    detected_is_full = 0
+    
+    # Removed Queue Status Flags
+    removed_pop_request = 0
+    removed_is_empty = 0 
+    removed_is_full = 0
 
     # Constructor
     def __init__(self, address=None, i2c_driver=None):
@@ -124,20 +129,21 @@ class QwiicPIR(object):
             if self._i2c == None:
                 print("Unable to load I2C driver for this platform.")
                 return
-            else: 
-                self._i2c = i2c_driver
+        else: 
+            self._i2c = i2c_driver
 
     # -----------------------------------------------
-    # isConnected()
+    # is_connected()
     #
     # Is an actual board connected to our system?
-    def isConnected(self):
+    def is_connected(self):
         """
             Determine if a Qwiic PIR device is connected to the system.
+            
             :return: True if the device is connected, otherwise False.
             :rtype: bool
         """
-        return qwiic._i2c.isDeviceConnected(self.address)
+        return qwiic_i2c.isDeviceConnected(self.address)
     
     # ------------------------------------------------
     # begin()
@@ -146,11 +152,12 @@ class QwiicPIR(object):
     def begin(self):
         """
             Initialize the operation of the Qwiic PIR
-            Run isConnected() and check the ID in the ID register
+            Run is_connected() and check the ID in the ID register
+            
             :return: Returns true if the intialization was successful, otherwise False.
             :rtype: bool
         """
-        if self.isConnected() == True:
+        if self.is_connected() == True:
             id = self._i2c.readByte(self.address, self.ID)
             
             if id == self.DEV_ID:
@@ -159,14 +166,15 @@ class QwiicPIR(object):
         return False
     
     # ------------------------------------------------
-    # getFirmwareVersion()
+    # get_firmware_version()
     #
     # Returns the firmware version of the attached devie as a 16-bit integer.
     # The leftmost (high) byte is the major revision number, 
     # and the rightmost (low) byte is the minor revision number.
-    def getFirmwareVersion(self):
+    def get_firmware_version(self):
         """
             Read the register and get the major and minor firmware version number.
+            
             :return: 16 bytes version number
             :rtype: int
         """
@@ -175,116 +183,126 @@ class QwiicPIR(object):
         return version
 
     # -------------------------------------------------
-    # setI2Caddress(address)
+    # set_I2C_address(new_address)
     #
     # Configures the attached device to attach to the I2C bus using the specified address
-    def setI2Caddress(self, newAddress):
+    def set_I2C_address(self, new_address):
         """
             Change the I2C address of the Qwiic PIR
+            
+            :param new_address: the new I2C address to set the Qwiic PIR to
             :return: True if the change was successful, false otherwise.
             :rtype: bool
         """
         # First, check if the specified address is valid
-        if newAddress < 0x08 or newAddress > 0x77:
+        if new_address < 0x08 or new_address > 0x77:
             return False
         
         # Write new address to the I2C address register of the Qwiic PIR
-        success = self._i2c.writeByte(self.address, self.I2C_ADDRESS, newAddress)
+        self._i2c.writeByte(self.address, self.I2C_ADDRESS, new_address)
 
         # Check if the write was successful
-        if success == True:
-            self.address = newAddress
-            return True
-        
-        else:
-            return False
+        self.address = new_address
     
     # ---------------------------------------------------
-    # getI2Caddress()
+    # get_I2C_address()
     #
     # Returns the I2C address of the device
-    def getI2Caddress(self):
+    def get_I2C_address(self):
         """
             Returns the current I2C address of the Qwiic PIR
+            
             :return: current I2C address
             :rtype: int
         """
         return self.address
 
     # ---------------------------------------------------
-    # rawReading()
+    # raw_reading()
     #
     # Returns 1 if the PIR is detecting an object, 0 otherwise
-    def rawReading(self):
+    def raw_reading(self):
         """
-            Returns the value of the rawReading status bit of the EVENT_STATUS register
-            :return: rawObjectDetected bit
+            Returns the value of the raw_reading status bit of the EVENT_STATUS register
+            
+            :return: raw_object_detected bit
             :rtype: bool
         """
-        # Read the pir status register
-        pirStatus = self._i2c.readByte(self.address, self.EVENT_STATUS)
-        # Convert to binary and clear all bits but rawObjectDetected
-        self.rawObjectDetected = bin(pirStatus) & 0x01
-        # Return rawObjectDetected as a bool
-        return bool(self.rawObjectDetected)
-    
+        # Read the PIR status register
+        pir_status = self._i2c.readByte(self.address, self.EVENT_STATUS)
+        # Convert to binary and clear all bits but raw_object_detected
+        self.raw_object_detected = int(pir_status) & ~(0xFE) 
+        # Return raw_object_detected as a bool
+        return bool(self.raw_object_detected)
+
+
     # ---------------------------------------------------
-    # objectDetected()
+    # object_detected()
     #
     # Returns 1 if the PIR has a debounced detect object event
-    def objectDetected(self):
+    def object_detected(self):
         """
-            Returns the value of the objectDetect status bit of the EVENT_STATUS register
-            :return: objectDetect bit
+            Returns the value of the object_detect status bit of the EVENT_STATUS register
+            
+            :return: object_detect bit
             :rtype: bool
         """
-        # Read the pir status register
-        pirStatus = self._i2c.readByte(self.address, self.EVENT_STATUS)
-        # Convert to binary and clear all bits but objectDetect
-        self.objectDetect = bin(pirStatus) & 0x08
-        # Return objectDetect as a bool
-        self.objectDetect = self.objectDetect >> 4
-        return bool(self.objectDetect)
+        # Read the PIR status register
+        pir_status = self._i2c.readByte(self.address, self.EVENT_STATUS)
+        # Convert to binary and clear all bits but object_detect
+        self.object_detect = int(pir_status) & ~(0xF7)
+        # Shift object_detect bit to zero position
+        self.object_detect = self.object_detect >> 3
+        # Return object_detect as a bool
+        return bool(self.object_detect)
     
     # ----------------------------------------------------
-    # objectRemoved()
+    # object_removed()
     #
     # Returns 1 if the object in front of the PIR is removed, and 0 otherwise
-    def objectRemoved(self):
+    def object_removed(self):
         """
-            Returns the value of the objectRemove status bit of the EVENT_STATUS register
-            :return: objectRemove bit
+            Returns the value of the object_remove status bit of the EVENT_STATUS register
+            
+            :return: object_remove bit
             :rtype: bool
         """
-        # Read the pir status register
-        pirStatus = self._i2c.readByte(self.address, self.EVENT_STATUS)
-        # Convert to binary and clear all bits but objectRemove
-        self.objectRemove = bin(pirStatus) & 0x04
-        # Shift objectRemoved to the zero bit
-        self.objectRemove = self.objectRemove >> 2
-        # Return objectRemoved as a bool
-        return bool(self.objectRemove)
+        # Read the PIR status register
+        pir_status = self._i2c.readByte(self.address, self.EVENT_STATUS)
+        # Convert to binary and clear all bits but object_remove
+        self.object_remove = int(pir_status) & ~(0xFB)
+        # Shift object_remove to the zero bit
+        self.object_remove = self.object_remove >> 2
+        # Return object_remove as a bool
+        return bool(self.object_remove)
     
     # ------------------------------------------------------
-    # getDebounceTime()
+    # get_debounce_time()
     #
     # Returns the time that the PIR is using to debounce events
-    def getDebounceTime(self):
+    def get_debounce_time(self):
         """
             Returns the value in the EVENT_DEBOUNCE_TIME register
+            
             :return: debounce time in milliseconds
             :rtype: int
         """
-        # TODO: just so you know, this will return a list. You need to find out how to concatenate the two items into one time silly
-        return self._i2c.readBlock(self.address, self.EVENT_DEBOUNCE_TIME, 2)
+        time_list = self._i2c.readBlock(self.address, self.EVENT_DEBOUNCE_TIME, 2)
+        # Convert list of bytes to time in milliseconds
+        time = int(time_list[0]) + int(time_list[1]) * 16 ** (2)
+        return time
     
     # -------------------------------------------------------
-    # setDebounceTime(time)
+    # set_debounce_time(time)
     #
     # Sets the time that the PIR is using to debounce events
-    def setDebouncetime(self, time):
+    def set_debounce_time(self, time):
         """
             Write two bytes into the EVENT_DEBOUNCE_TIME register
+            
+            :param time: the time in milliseconds to set debounce time to
+                The max deounce time is 0xFFFF milliseconds, but the function
+                checks if the entered parameter is valid
             :return: Nothing
             :rtype: void
         """
@@ -295,287 +313,312 @@ class QwiicPIR(object):
         self._i2c.writeWord(self.address, self.EVENT_DEBOUNCE_TIME, time)
 
     # -------------------------------------------------------
-    # enableInterrupt()
+    # enable_interrupt()
     #
-    # The interrupt will be configured to trigger when the pir
+    # The interrupt will be configured to trigger when the PIR
     # detects an object.
-    def enableInterrupt(self):
+    def enable_interrupt(self):
         """
-            Set interruptEnable bit of the INTERRUPT_CONFIG register to a 1
+            Set interrupt_enable bit of the INTERRUPT_CONFIG register to a 1
+            
             :return: Nothing
             :rtype: Void
         """
-        # First, read the INTERRUPT_CONFIG register
-        interruptConfig = self._i2c.readByte(self.address, self.INTERRUPT_CONFIG)
-        self.interruptEnable = 1
-        # Set the interruptEnable bit
-        interruptConfig = interruptConfig | (self.interruptEnable << 1)
+        self.interrupt_enable = 1
         # Write the new interrupt configure byte
-        self._i2c.writeByte(self.address, self.INTERRUPT_CONFIG, interruptConfig)
+        self._i2c.writeByte(self.address, self.INTERRUPT_CONFIG, self.interrupt_enable)
+        # For debugging
+        temp = self._i2c.readByte(self.address, self.INTERRUPT_CONFIG)
+        print(temp)
     
     # -------------------------------------------------------
-    # disableInterrupt()
+    # disable_interrupt()
     # 
     # Interrupt will no longer be configured to trigger when the
-    # pir is detecting.
-    def disableInterrupt(self):
+    # PIR is detecting.
+    def disable_interrupt(self):
         """
-            Clear the interruptEnable bit of the INTERRUPT_CONFIG register
+            Clear the interrupt_enable bit of the INTERRUPT_CONFIG register
+            
             :return: Nothing
             :rtype: Void
         """
-        # First, read the INTERRUPT_CONFIG register
-        interruptConfig = self._i2c.readByte(self.address, self.INTERRUPT_CONFIG)
-        self.interruptEnable = 0
-        # Clear the interruptEnable bit
-        interruptConfig = interruptConfig & ~(1 << 1)
+        self.interrupt_enable = 0
         # Write the new interrupt configure byte
-        self._i2c.writeByte(self.address, self.INTERRUPT_CONFIG, interruptConfig)
+        self._i2c.writeByte(self.address, self.INTERRUPT_CONFIG, self.interrupt_enable)
+        # For debugging
+        temp = self._i2c.readByte(self.address, self.INTERRUPT_CONFIG)
+        print(temp)
 
     # -------------------------------------------------------
     # available()
     #
-    # Returns the eventAvailble bit. This bit is set to 1 if a
-    # pir detect or remove event occurred
+    # Returns the event_availble bit. This bit is set to 1 if a
+    # PIR detect or remove event occurred
     def available(self):
         """
-            Return the eventAvailable bit of the EVENT_STATUS register
+            Return the event_available bit of the EVENT_STATUS register
             
-            :return: eventAvailable bit
+            :return: event_available bit
             :rtye: bool
         """
         # First, read EVENT_STATUS register
-        pirStatus = self._i2c.readByte(self.address, self.EVENT_STATUS)
-        # Convert to binary and clear all bits but the eventAvailable bit
-        self.eventAvailable = bin(pirStatus) & 0x02
-
-        # Return eventAvailable bit as a bool
-        return bool(self.eventAvailable)
+        pir_status = self._i2c.readByte(self.address, self.EVENT_STATUS)
+        # Convert to binary and clear all bits but the event_available bit
+        self.event_available = int(pir_status) & ~(0xFD)
+        # Shift event_availble to the zero bit
+        self.event_available = self.event_available >> 1
+        # Return event_available bit as a bool
+        return bool(self.event_available)
     
     # -------------------------------------------------------
-    # clearEventBits()
+    # clear_event_bits()
     # 
-    # Sets all pir status bits (rawObjectDetected, objectRemoved, 
-    # and eventAvailable) to zero.
-    def clearEventBits(self):
+    # Sets all PIR status bits (raw_object_detected, object_removed, 
+    # and event_available) to zero.
+    def clear_event_bits(self):
         """
-            Clear the rawObjectDetected, objectRemove, objectDetect, and eventAvailable
+            Clear the object_remove, object_detect, and event_available
             bits of the EVENT_STATUS register
+            
             :return: Nothing
             :rtype: Void
         """
         # First, read EVENT_STATUS register
-        pirStatus = self._i2c.readByte(self.address, self.EVENT_STATUS)
-        # Convert to binary and clear the last four bits
-        pirStatus = bin(pirStatus) & ~(0x08)
+        pir_status = self._i2c.readByte(self.address, self.EVENT_STATUS)
+        # Convert to binary and clear bits 1, 2, and 3
+        pir_status = int(pir_status) & ~(0x0E)
         # Write to EVENT_STATUS register
-        self._i2c.writeByte(self.address, self.EVENT_STATUS, pirStatus)
+        self._i2c.writeByte(self.address, self.EVENT_STATUS, pir_status)
+        # Update variables
+        self.object_remove = 0
+        self.objected_detect = 0
+        self.event_available = 0
+        # For debugging
+        temp = self._i2c.readByte(self.address, self.EVENT_STATUS)
+        print(temp)
     
     # -------------------------------------------------------
-    # resetInterruptConfig()
+    # reset_interrupt_config()
     #
     # Resets the interrupt configuration back to defaults.
-    def resetInterruptConfig(self):
+    def reset_interrupt_config(self):
         """
-            Enable detect and removed interrupts and clear the
-            eventAvailable bit of EVENT_STATUS register
+            Enable detect interrupt and clear the
+            event_available bit of EVENT_STATUS register
+            
             :return: Nothing
             :rtype: Void
         """
-        self.interruptEnable = 1
-        # write 0b1 to the INTERRUPT_CONFIG register
-        self._i2c.writeByte(self.address, self.INTERRUPT_CONFIG, 0b1)
-        self.eventAvailable = 0
-        # Clear objectRemove, rawObjectDetected too
-        # TODO: not sure if this is right
-        self.objectRemove = 0
-        self.objectDetect = 0
-        self.rawObjectDetected = 0
-        # Clear the EVENT_STATUS register by writing a 0
-        self._i2c.writeByte(self.address, self.EVENT_STATUS, 0x00)
+        # Enable interrupts on PIR detection
+        self.enable_interrupt()
+        # Clear the event bits
+        self.clear_event_bits()
     
     # -------------------------------------------------------
-    # isDetectedQueueFull()
+    # is_detected_queue_full()
     #
-    # Returns true if queue of pir detect timestamps is full,
+    # Returns true if queue of PIR detect timestamps is full,
     # and false otherwise.
-    def isDetectedQueueFull(self):
+    def is_detected_queue_full(self):
         """
-            Returns the isFull bit of the DETECTED_QUEUE_STATUS register
-            :return: isFull
+            Returns the is_full bit of the DETECTED_QUEUE_STATUS register
+            
+            :return: detected_is_full
             :rtype: bool
         """
         # First, read the DETECTED_QUEUE_STATUS register
-        detectedQueueStat = self._i2c.readByte(self.address, self.DETECTED_QUEUE_STATUS)
-        # Convert to binary and clear all bits but isFull
-        self.isFull = bin(detectedQueueStat) & ~(0xFE)
-        # Return isFull as a bool
-        return bool(self.isFull)
+        detected_queue_stat = self._i2c.readByte(self.address, self.DETECTED_QUEUE_STATUS)
+        # Convert to binary and clear all bits but is_full
+        self.detected_is_full = int(detected_queue_stat) & ~(0xFB)
+        # Shift detected_is_full bit to zero position
+        self.detected_is_full = self.detected_is_full >> 2
+        # Return detected_is_full as a bool
+        return bool(self.detected_is_full)
     
     # -------------------------------------------------------
-    # isDetectedQueueEmpty()
+    # is_detected_queue_empty()
     #
-    # Returns true if the queue of pir detect timestamps is
+    # Returns true if the queue of PIR detect timestamps is
     # empty, and false otherwise.
-    def isDetectedQueueEmpty(self):
+    def is_detected_queue_empty(self):
         """
-            Returns the isEmpty bit of the DETECTED_QUEUE_STATUS register
+            Returns the is_empty bit of the DETECTED_QUEUE_STATUS register
             
-            :return: isEmpty
+            :return: detected_is_empty
             :rtype: bool
         """
         # First, read the DETECTED_QUEUE_STATUS register
-        detectedQueueStat = self._i2c.readByte(self.address, self.DETECTED_QUEUE_STATUS)
-        # Convert to binary and clear all bits but isEmpty
-        self.isEmpty = bin(detectedQueueStat) & ~(0xFD)
-        # Shift isEmpty to the zero bit
-        self.isEmpty = self.isEmpty >> 1
-        # Return isEmpty as a bool
-        return bool(self.isEmpty)
+        detected_queue_stat = self._i2c.readByte(self.address, self.DETECTED_QUEUE_STATUS)
+        # Convert to binary and clear all bits but is_empty
+        self.detected_is_empty = int(detected_queue_stat) & ~(0xFD)
+        # Shift detected_is_empty to the zero bit
+        self.detected_is_empty = self.detected_is_empty >> 1
+        # Return is_empty as a bool
+        return bool(self.detected_is_empty)
 
     # ------------------------------------------------------
-    # timeSinceLastDetect()
+    # time_since_last_detect()
     #
     # Returns how many milliseconds it has been since the last
     # detect event. Since this returns a 32-bit int, it will 
     # roll over about every 50 days.
-    def timeSinceLastDetect(self):
+    def time_since_last_detect(self):
         """
             Returns the four bytes of DETECTED_QUEUE_FRONT.
             Time in milliseconds.
+            
             :return: DETECTED_QUEUE_FRONT
             :rtype: int
         """
-        # TODO: not sure if this will work because this read might return a list?
-        return self._i2c.readBlock(self.address, self.DETECTED_QUEUE_FRONT, 4)
-
+        time_list = self._i2c.readBlock(self.address, self.DETECTED_QUEUE_FRONT, 4)
+        # Convert list of bytes to a time in milliseconds
+        time = int(time_list[0]) + int(time_list[1]) * 16 ** (2) + int(time_list[2]) * 16 ** (4) + int(time_list[3]) * 16 ** (6)
+        return time
+        
     # -------------------------------------------------------
-    # timeSinceFirstDetect()
+    # time_since_first_detect()
     #
     # Returns how many milliseconds it has been since the first 
     # detect event. Since this returns a 32-bit int, it will 
     # roll over about every 50 days.
-    def timeSinceFirstDetect(self):
+    def time_since_first_detect(self):
         """
             Returns the four bytes of DETECTED_QUEUE_BACK.
             Time in milliseconds
+            
             :return: DETECTED_QUEUE_BACK
             :rtype: int
         """
-        return self._i2c.readBlock(self.address, self.DETECTED_QUEUE_BACK, 4)
-
+        time_list = self._i2c.readBlock(self.address, self.DETECTED_QUEUE_BACK, 4)
+        # Convert the list of bytes into milliseconds
+        time = int(time_list[0]) + int(time_list[1]) * 16 ** (2) + int(time_list[2]) * 16 ** (4) + int(time_list[3]) * 16 ** (6)
+        return time
+        
     # -------------------------------------------------------
-    # popDetectedQueue()
+    # pop_detected_queue()
     #
     # Returns the oldest value in the queue (milliseconds since 
-    # first pir detect event), and then removes it.
-    def popDetectedQueue(self):
+    # first PIR detect event), and then removes it.
+    def pop_detected_queue(self):
         """
             Returns contents of DETECTED_QUEUE_BACK register and 
-            writes a 1 to popRequest bit of DETECTED_QUEUE_STATUS
+            writes a 1 to pop_request bit of DETECTED_QUEUE_STATUS
             register.
+            
             :return: DETECTED_QUEUE_BACK
             :rtype: int
         """
-        # Get the time in milliseconds since the pir was first detect
-        tempData = self.timeSinceFirstDetect()
+        # Get the time in milliseconds since the PIR was first detect
+        temp_data = self.time_since_first_detect()
         # Read DETECTED_QUEUE_STATUS register
-        detectedQueueStat = self._i2c.readByte(self.address, self.DETECTED_QUEUE_STATUS)
-        self.popRequest = 1
-        # Set popRequest bit to 1
-        detectedQueueStat = detectedQueueStat | (self.popRequest << 2)
-        self._i2c.writeByte(self.address, self.DETECTED_QUEUE_STATUS, detectedQueueStat)
-        return tempData
+        detected_queue_stat = self._i2c.readByte(self.address, self.DETECTED_QUEUE_STATUS)
+        # Set detected_pop_request bit to 1
+        self.detected_pop_request = 1
+        detected_queue_stat = detected_queue_stat | (self.detected_pop_request)
+        self._i2c.writeByte(self.address, self.DETECTED_QUEUE_STATUS, detected_queue_stat)
+        return temp_data
     
     # -------------------------------------------------------
-    # isRemovedQueueFull()
+    # is_removed_queue_full()
     #
-    # Returns true if queue of pir remove timestamps is full,
+    # Returns true if queue of PIR remove timestamps is full,
     # and false otherwise.
-    def isRemovedQueueFull(self):
+    def is_removed_queue_full(self):
         """
-            Returns the isFull bit of the DETECTED_QUEUE_STATUS register
-            :return: isFull
+            Returns the is_full bit of the REMOVED_QUEUE_STATUS register
+            
+            :return: removed_is_full
             :rtype: bool
         """
-        # First, read the DETECTED_QUEUE_STATUS register
-        removeedQueueStat = self._i2c.readByte(self.address, self.DETECTED_QUEUE_STATUS)
-        # Convert to binary and clear all bits but isFull
-        self.isFull = bin(removeedQueueStat) & ~(0xFE)
-        # Return isFull as a bool
-        return bool(self.isFull)
+        # First, read the REMOVED_QUEUE_STATUS register
+        removed_queue_stat = self._i2c.readByte(self.address, self.REMOVED_QUEUE_STATUS)
+        # Convert to binary and clear all bits but is_full
+        self.removed_is_full = int(removed_queue_stat) & ~(0xFB)
+        # Shift removed_is_full to the zero bit
+        self.removed_is_full = self.removed_is_full >> 2
+        # Return removed_is_full as a bool
+        return bool(self.removed_is_full)
     
     # -------------------------------------------------------
-    # isRemovedQueueEmpty()
+    # is_removed_queue_empty()
     #
-    # Returns true if the queue of pir remove timestamps is
+    # Returns true if the queue of PIR remove timestamps is
     # empty, and false otherwise.
-    def isRemovedQueueEmpty(self):
+    def is_removed_queue_empty(self):
         """
-            Returns the isEmpty bit of the DETECTED_QUEUE_STATUS register
+            Returns the is_empty bit of the REMOVED_QUEUE_STATUS register
             
-            :return: isEmpty
+            :return: removed_is_empty
             :rtype: bool
         """
-        # First, read the DETECTED_QUEUE_STATUS register
-        removeedQueueStat = self._i2c.readByte(self.address, self.DETECTED_QUEUE_STATUS)
-        # Convert to binary and clear all bits but isEmpty
-        self.isEmpty = bin(removeedQueueStat) & ~(0xFD)
-        # Shift isEmpty to the zero bit
-        self.isEmpty = self.isEmpty >> 1
-        # Return isEmpty as a bool
-        return bool(self.isEmpty)
+        # First, read the REMOVED_QUEUE_STATUS register
+        removed_queue_stat = self._i2c.readByte(self.address, self.REMOVED_QUEUE_STATUS)
+        # Convert to binary and clear all bits but is_empty
+        self.removed_is_empty = int(removed_queue_stat) & ~(0xFD)
+        # Shift removed_is_empty to the zero bit
+        self.removed_is_empty = self.removed_is_empty >> 1
+        # Return removed_is_empty as a bool
+        return bool(self.removed_is_empty)
 
     # ------------------------------------------------------
-    # timeSinceLastRemove()
+    # time_since_last_remove()
     #
     # Returns how many milliseconds it has been since the last
     # remove event. Since this returns a 32-bit int, it will 
     # roll over about every 50 days.
-    def timeSinceLastRemove(self):
+    def time_since_last_remove(self):
         """
-            Returns the four bytes of DETECTED_QUEUE_FRONT.
+            Returns the four bytes of REMOVED_QUEUE_FRONT.
             Time in milliseconds.
-            :return: DETECTED_QUEUE_FRONT
+            
+            :return: REMOVED_QUEUE_FRONT
             :rtype: int
         """
-        # TODO: not sure if this will work because this read might return a list?
-        return self._i2c.readBlock(self.address, self.DETECTED_QUEUE_FRONT, 4)
-
+        time_list = self._i2c.readBlock(self.address, self.REMOVED_QUEUE_FRONT, 4)
+        # Convert list of bytes to time in milliseconds
+        time = int(time_list[0]) + int(time_list[1]) * 16 ** (2) + int(time_list[2]) * 16 ** (4) + int(time_list[3]) * 16 ** (6)
+        return time
+        
     # -------------------------------------------------------
-    # timeSinceFirstRemove()
+    # time_since_first_remove()
     #
     # Returns how many milliseconds it has been since the first 
     # remove event. Since this returns a 32-bit int, it will 
     # roll over about every 50 days.
-    def timeSinceFirstRemove(self):
+    def time_since_first_remove(self):
         """
-            Returns the four bytes of DETECTED_QUEUE_BACK.
+            Returns the four bytes of REMOVED_QUEUE_BACK.
             Time in milliseconds
-            :return: DETECTED_QUEUE_BACK
+            
+            :return: REMOVED_QUEUE_BACK
             :rtype: int
         """
-        return self._i2c.readBlock(self.address, self.DETECTED_QUEUE_BACK, 4)
+        time_list = self._i2c.readBlock(self.address, self.REMOVED_QUEUE_BACK, 4)
+        # Convert list of bytes into time in milliseconds
+        time = int(time_list[0]) + int(time_list[1]) * 16 ** (2) + int(time_list[2]) * 16 ** (4) + int(time_list[3]) * 16 ** (6)
+        return time
 
     # -------------------------------------------------------
-    # popRemoveedQueue()
+    # pop_removed_queue()
     #
     # Returns the oldest value in the queue (milliseconds since 
-    # first pir remove event), and then removes it.
-    def popRemoveedQueue(self):
+    # first PIR remove event), and then removes it.
+    def pop_removed_queue(self):
         """
-            Returns contents of DETECTED_QUEUE_BACK register and 
-            writes a 1 to popRequest bit of DETECTED_QUEUE_STATUS
+            Returns contents of REMOVED_QUEUE_BACK register and 
+            writes a 1 to pop_request bit of REMOVED_QUEUE_STATUS
             register.
-            :return: DETECTED_QUEUE_BACK
+            
+            :return: REMOVED_QUEUE_BACK
             :rtype: int
         """
-        # Get the time in milliseconds since the pir was first remove
-        tempData = self.timeSinceFirstRemove()
-        # Read DETECTED_QUEUE_STATUS register
-        removeedQueueStat = self._i2c.readByte(self.address, self.DETECTED_QUEUE_STATUS)
-        self.popRequest = 1
-        # Set popRequest bit to 1
-        removeedQueueStat = removeedQueueStat | (self.popRequest << 2)
-        self._i2c.writeByte(self.address, self.DETECTED_QUEUE_STATUS, removeedQueueStat)
-        return tempData
+        # Get the time in milliseconds since the PIR was first remove
+        temp_data = self.time_since_first_remove()
+        # Read REMOVED_QUEUE_STATUS register
+        removed_queue_stat = self._i2c.readByte(self.address, self.REMOVED_QUEUE_STATUS)
+        # Set removed_pop_request bit to 1
+        self.removed_pop_request = 1
+        removed_queue_stat = removed_queue_stat | (self.removed_pop_request)
+        self._i2c.writeByte(self.address, self.REMOVED_QUEUE_STATUS, removed_queue_stat)
+        return temp_data
