@@ -327,9 +327,6 @@ class QwiicPIR(object):
         self.interrupt_enable = 1
         # Write the new interrupt configure byte
         self._i2c.writeByte(self.address, self.INTERRUPT_CONFIG, self.interrupt_enable)
-        # For debugging
-        temp = self._i2c.readByte(self.address, self.INTERRUPT_CONFIG)
-        print(temp)
     
     # -------------------------------------------------------
     # disable_interrupt()
@@ -346,9 +343,6 @@ class QwiicPIR(object):
         self.interrupt_enable = 0
         # Write the new interrupt configure byte
         self._i2c.writeByte(self.address, self.INTERRUPT_CONFIG, self.interrupt_enable)
-        # For debugging
-        temp = self._i2c.readByte(self.address, self.INTERRUPT_CONFIG)
-        print(temp)
 
     # -------------------------------------------------------
     # available()
@@ -394,9 +388,6 @@ class QwiicPIR(object):
         self.object_remove = 0
         self.objected_detect = 0
         self.event_available = 0
-        # For debugging
-        temp = self._i2c.readByte(self.address, self.EVENT_STATUS)
-        print(temp)
     
     # -------------------------------------------------------
     # reset_interrupt_config()
