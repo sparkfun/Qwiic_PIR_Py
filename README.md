@@ -10,8 +10,8 @@ Qwiic_PIR_Py
 		<img src="https://img.shields.io/pypi/pyversions/sparkfun-qwiic-pir.svg" /></a>
 	<a href="https://github.com/sparkfun/Qwiic_PIR_Py/issues" alt="Issues">
 		<img src="https://img.shields.io/github/issues/sparkfun/Qwiic_PIR_Py.svg" /></a>
-	<a href="https://qwiic-pir-py.readthedocs.io/en/main/?" alt="Documentation">
-		<img src="https://readthedocs.org/projects/qwiic-pir-py/badge/?version=main&style=flat" /></a>
+	<a href="https://qwiic-pir-py.readthedocs.io/en/latest/?" alt="Documentation">
+		<img src="https://readthedocs.org/projects/qwiic-pir-py/badge/?version=latest&style=flat" /></a>
 	<a href="https://github.com/sparkfun/Qwiic_PIR_Py/blob/master/LICENSE" alt="License">
 		<img src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
 	<a href="https://twitter.com/intent/follow?screen_name=sparkfun">
