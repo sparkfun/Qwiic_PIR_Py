@@ -1,5 +1,8 @@
 API Reference
 ==============
 
-.. automodule:: qwiic_template
+.. automodule:: qwiic_pir
+   :members:
+
+.. autoclass:: QwiicPIR
    :members:

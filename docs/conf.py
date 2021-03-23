@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'sparkfun_pir_py'
+project = 'sparkfun_qwiic_pir'
 copyright = '2021, SparkFun Electronics'
 author = 'SparkFun Electronics'
 
@@ -34,7 +34,7 @@ extensions = [
 	'sphinx.ext.autodoc',
 	'sphinx.ext.intersphinx',
 	'sphinx.ext.viewcode',
-	'm2r'
+	'm2r2'
 	]
 
 source_suffix = ['.rst', '.md']
