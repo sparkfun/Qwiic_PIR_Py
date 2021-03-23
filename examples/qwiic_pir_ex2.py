@@ -44,8 +44,6 @@ import qwiic_pir
 import time
 import sys
 
-debounce_time = .20
-
 def run_example():
 
 	print("\nSparkFun Qwiic PIR  Example 2\n")
@@ -70,7 +68,7 @@ def run_example():
 			if my_PIR.object_removed():
 				print("Object Removed")
 			my_PIR.clear_event_bits()
-		time.sleep(debounce_time)
+		time.sleep(0.2)
 
 if __name__ == '__main__':
 	try:

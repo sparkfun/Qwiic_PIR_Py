@@ -44,8 +44,6 @@ import qwiic_pir
 import time
 import sys
 
-debounce_time = .2
-
 def run_example():
 
 	print("\nSparkFun Qwiic PIR  Example 4\n")
@@ -76,7 +74,7 @@ def run_example():
 			print("\nPopped removed queue! The first timestamp in removed queue was: ")
 			print(str(my_PIR.pop_removed_queue() / 1000.0))
 			
-		time.sleep(debounce_time)
+		time.sleep(0.2)
 
 if __name__ == '__main__':
 	try:

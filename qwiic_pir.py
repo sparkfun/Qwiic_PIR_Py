@@ -59,7 +59,7 @@ _DEFAULT_NAME = "Qwiic PIR"
 # Some devices have  multiple available addresses - this is a list of these addresses.
 # NOTE: The first address in this list is considered the default I2C address for the 
 # device.
-_AVAILABLE_I2C_ADDRESS = [0x12]
+_AVAILABLE_I2C_ADDRESS = [0x12, 0x13]
 
 # Define the class that encapsulates the device being created. All information associated 
 # with this device is encapsulated by this class. The device class should be the only value

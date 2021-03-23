@@ -44,8 +44,6 @@ import qwiic_pir
 import time
 import sys
 
-debounce_time = .2
-
 def run_example():
 
 	print("\nSparkFun Qwiic PIR  Example 3\n")
@@ -80,7 +78,7 @@ def run_example():
 		else:
 			print("Removed queue is empty")
 			
-		time.sleep(debounce_time)
+		time.sleep(0.2)
 
 if __name__ == '__main__':
 	try:
