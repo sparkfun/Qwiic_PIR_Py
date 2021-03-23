@@ -22,7 +22,7 @@ Qwiic_PIR_Py
 
 <img src="https://cdn.sparkfun.com/assets/parts/1/6/4/0/7/17375-SparkFun_Qwiic_PIR_-_1uA__EKMB1107112_-01.jpg"  align="right" width=300 alt="SparkFun Qwiic Button">
 
-Python module for the [SparkFun Qwiic PIR - 1 uA (EKMB1107112)](https://www.sparkfun.com/products/17375) adn [SparkFun Qwiic PIR - 170 uA (EKMC4607112K)](https://www.sparkfun.com/products/17374).
+Python module for the [SparkFun Qwiic PIR - 1 uA (EKMB1107112)](https://www.sparkfun.com/products/17375) and [SparkFun Qwiic PIR - 170 uA (EKMC4607112K)](https://www.sparkfun.com/products/17374).
 
 This python package is a port of the existing [SparkFun Qwiic PIR Arduino Library](https://github.com/sparkfun/SparkFun_Qwiic_PIR_Arduino_Library)
 
@@ -42,8 +42,6 @@ Supported Platforms
 --------------------
 The Qwiic Button Python package current supports the following platforms:
 * [Raspberry Pi](https://www.sparkfun.com/search/results?term=raspberry+pi)
-* [NVidia Jetson Nano](https://www.sparkfun.com/products/15297)
-* [Google Coral Development Board](https://www.sparkfun.com/products/15318)
 
 Dependencies
 --------------
