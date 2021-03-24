@@ -50,7 +50,7 @@ This driver package depends on the qwiic I2C driver:
 
 Documentation
 -------------
-The SparkFun Qwiic PIR module documentation is hosted at [ReadTheDocs](https://qwiic-pir-py.readthedocs.io/en/main/?)
+The SparkFun Qwiic PIR module documentation is hosted at [ReadTheDocs](https://qwiic-pir-py.readthedocs.io/en/latest/?)
 
 Installation
 ---------------
