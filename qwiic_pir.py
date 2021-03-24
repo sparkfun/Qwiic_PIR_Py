@@ -61,8 +61,8 @@ _DEFAULT_NAME = "Qwiic PIR"
 # device.
 _QWIIC_PIR_DEFAULT_ADDRESS = 0x12
 _FULL_ADDRESS_LIST = list(range(0x08, 0x77+1))  # Full address list (excluding reserved addresses)
-_FULL_ADDRESS_LIST.remove(_QWIIC_PIR_DEFAULT_ADDRESS >> 1)  # Remove default address from list
-_AVAILABLE_I2C_ADDRESS = [_QWIIC_PIR_DEFAULT_ADDRESS >> 1]  # Initialize with default address
+_FULL_ADDRESS_LIST.remove(_QWIIC_PIR_DEFAULT_ADDRESS)  # Remove default address from list
+_AVAILABLE_I2C_ADDRESS = [_QWIIC_PIR_DEFAULT_ADDRESS]  # Initialize with default address
 _AVAILABLE_I2C_ADDRESS.extend(_FULL_ADDRESS_LIST)   # Add full range of I2C addresses
 
 # Define the class that encapsulates the device being created. All information associated 
