@@ -47,7 +47,7 @@ import sys
 def run_example():
 
 	print("\nSparkFun Qwiic PIR  Example 5\n")
-	my_PIR = qwiic_pir.QwiicPIR(0x27)
+	my_PIR = qwiic_pir.QwiicPIR()
 
 	if my_PIR.begin() == False:
 		print("The Qwiic PIR isn't connected to the system. Please check your connection", \
@@ -58,7 +58,7 @@ def run_example():
 	print("\nDon't use the 0x prefix. For instance, if you wanted to")
 	print("\nchange the address to 0x5B, you would type 5B and hit enter.")
 	
-	new_address = raw_input("\nNew address: ")
+	new_address = input("\nNew address: ")
 	# Change to hex
 	new_address = int(new_address, 16)
 	
